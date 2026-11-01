@@ -4,6 +4,8 @@ import StudentOnboarding from './components/StudentOnboarding.jsx';
 import SkillAssessment from './components/SkillAssessment.jsx';
 import SkillGapDashboard from './components/SkillGapDashboard.jsx';
 import AIMockInterview from './components/AIMockInterview.jsx';
+import AICodeSandbox from './components/AICodeSandbox.jsx';
+import AILabVisualizer from './components/AILabVisualizer.jsx';
 import WeeklyPlan from './components/WeeklyPlan.jsx';
 import ProgressTracker from './components/ProgressTracker.jsx';
 import TPODashboard from './components/TPODashboard.jsx';
@@ -14,6 +16,8 @@ const STUDENT_SCREENS = {
   assessment: SkillAssessment,
   dashboard: SkillGapDashboard,
   interview: AIMockInterview,
+  code: AICodeSandbox,
+  lab: AILabVisualizer,
   plan: WeeklyPlan,
   progress: ProgressTracker,
 };

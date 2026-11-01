@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, RadarChart, Radar, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend } from 'recharts';
 import { useApp } from '../context/AppContext.jsx';
 import ReadinessGauge from './ReadinessGauge.jsx';
 import { simulateSkillImprovement } from '../utils/aiPredictiveModel.js';
+import PlacementDossierModal from './PlacementDossierModal.jsx';
 
 const STATUS_COLOR = {
   missing: '#B4532A',
@@ -21,6 +22,7 @@ const STATUS_LABEL = {
 export default function SkillGapDashboard() {
   const { role, gapResult, readinessScore, placementPrediction, quizAvg, progressCompletion, interviewAvgScore, atsScore, setStep } = useApp();
   const [simulatedSkill, setSimulatedSkill] = useState(null);
+  const [showDossier, setShowDossier] = useState(false);
 
   if (!role) {
     return <p className="text-ink/60">Pick a target role first, on the Profile & Role step.</p>;
@@ -34,7 +36,14 @@ export default function SkillGapDashboard() {
     weight: g.weight,
   }));
 
-  // Default simulated skill is the highest-weight weak skill
+  // Radar Chart Data: Candidate vs Benchmark Tier-1 Bar
+  const radarData = gapResult.gaps.map((g) => ({
+    subject: g.skill.length > 14 ? g.skill.slice(0, 12) + '…' : g.skill,
+    candidate: g.current,
+    benchmark: 80, // Placement benchmark target
+    fullMark: 100,
+  }));
+
   const selectedSkillForSim = simulatedSkill
     ? gapResult.gaps.find((g) => g.skill === simulatedSkill)
     : gapResult.gaps.find((g) => g.status !== 'strong') || gapResult.gaps[0];
@@ -57,22 +66,30 @@ export default function SkillGapDashboard() {
 
   return (
     <div className="max-w-4xl space-y-8">
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <p className="font-mono text-xs text-runway tracking-wide">STEP 3</p>
-          <span className="text-[10px] bg-runway/10 text-runway font-mono px-2 py-0.5 rounded font-semibold">
-            Predictive ML & XAI Attribution
-          </span>
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="font-mono text-xs text-runway tracking-wide">STEP 3</p>
+            <span className="text-[10px] bg-runway/10 text-runway font-mono px-2 py-0.5 rounded font-semibold">
+              Predictive ML & XAI Attribution
+            </span>
+          </div>
+          <h2 className="font-display text-3xl mt-1 mb-2">Skill Gaps & Placement Probability</h2>
+          <p className="text-ink/60">
+            Ranked by algorithmic impact — recruitment weight × gap magnitude. The predictive machine learning model calculates your campus selection probability with full <strong>Explainable AI (XAI)</strong> transparency.
+          </p>
         </div>
-        <h2 className="font-display text-3xl mt-1 mb-2">Skill Gaps & Placement Probability</h2>
-        <p className="text-ink/60">
-          Ranked by algorithmic impact — recruitment weight × gap magnitude. The predictive machine learning model calculates your campus selection probability with full <strong>Explainable AI (XAI)</strong> transparency.
-        </p>
+
+        <button
+          onClick={() => setShowDossier(true)}
+          className="bg-paper border border-line hover:border-ink text-ink text-xs px-3.5 py-2 rounded font-medium shadow-xs flex items-center gap-1.5 shrink-0"
+        >
+          <span>📄</span> Audit Dossier & Certification
+        </button>
       </div>
 
       {/* Top Cards: Readiness + ML Probability */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Rule-based Readiness Gauge */}
         <div className="bg-white border border-line rounded p-6 flex items-center gap-6 shadow-sm">
           <ReadinessGauge score={readinessScore} />
           <div>
@@ -84,7 +101,6 @@ export default function SkillGapDashboard() {
           </div>
         </div>
 
-        {/* Calibrated ML Placement Probability Card */}
         <div className="bg-white border border-line rounded p-6 shadow-sm flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-1">
@@ -217,24 +233,49 @@ export default function SkillGapDashboard() {
         </div>
       )}
 
-      {/* Horizontal Bar Chart of Skill Shortfalls */}
-      <div className="bg-white border border-line rounded p-6 shadow-sm">
-        <h3 className="font-display text-lg font-bold mb-1">Competency Proficiency Bar Chart</h3>
-        <p className="text-xs text-ink/50 mb-4">Target threshold is 70% placement-ready.</p>
-        <div style={{ height: 300 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} layout="vertical" margin={{ left: 10, right: 20 }}>
-              <CartesianGrid stroke="#DDD5C2" horizontal={false} />
-              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="current" radius={[0, 3, 3, 0]}>
-                {chartData.map((entry, i) => (
-                  <Cell key={i} fill={STATUS_COLOR[entry.status]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+      {/* Visual Analytics: Radar Chart & Bar Chart */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Radar Spider Chart */}
+        <div className="bg-white border border-line rounded p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="font-display text-lg font-bold mb-1">Competency Radar Map</h3>
+            <p className="text-xs text-ink/50 mb-2">Candidate vs. Tier-1 Placement Benchmark (80%)</p>
+          </div>
+          <div style={{ height: 260 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart data={radarData}>
+                <PolarGrid stroke="#DDD5C2" />
+                <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10 }} />
+                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} />
+                <Radar name="Candidate" dataKey="candidate" stroke="#2F6F6F" fill="#2F6F6F" fillOpacity={0.4} />
+                <Radar name="Tier-1 Bar" dataKey="benchmark" stroke="#D9A441" fill="#D9A441" fillOpacity={0.15} />
+                <Legend wrapperStyle={{ fontSize: 11 }} />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Horizontal Bar Chart */}
+        <div className="bg-white border border-line rounded p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="font-display text-lg font-bold mb-1">Proficiency Bar Chart</h3>
+            <p className="text-xs text-ink/50 mb-2">Target threshold is 70% placement-ready.</p>
+          </div>
+          <div style={{ height: 260 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} layout="vertical" margin={{ left: 5, right: 10 }}>
+                <CartesianGrid stroke="#DDD5C2" horizontal={false} />
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 10 }} />
+                <YAxis type="category" dataKey="name" width={110} tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Bar dataKey="current" radius={[0, 3, 3, 0]}>
+                  {chartData.map((entry, i) => (
+                    <Cell key={i} fill={STATUS_COLOR[entry.status]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
 
@@ -272,12 +313,17 @@ export default function SkillGapDashboard() {
           <span>🎙️</span> Practice AI Mock Interview Round
         </button>
         <button
-          onClick={() => setStep('plan')}
-          className="bg-ink text-white px-6 py-3 rounded hover:bg-ink/90 text-xs font-semibold"
+          onClick={() => setStep('code')}
+          className="bg-ink text-white px-6 py-3 rounded hover:bg-ink/90 text-xs font-semibold flex items-center gap-2"
         >
-          Generate AI Weekly Plan →
+          <span>💻</span> Open AI Code Sandbox →
         </button>
       </div>
+
+      <PlacementDossierModal
+        isOpen={showDossier}
+        onClose={() => setShowDossier(false)}
+      />
     </div>
   );
 }
