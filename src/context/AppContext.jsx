@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useMemo, useState, useEffect } from 'react';
 import { ROLES } from '../data/mockData.js';
 import { computeSkillGap, computeReadinessScore } from '../utils/skillGapEngine.js';
+import { predictPlacementProbability } from '../utils/aiPredictiveModel.js';
 
 const AppContext = createContext(null);
 
-const STORAGE_KEY = 'placement-assistant-state-v1';
+const STORAGE_KEY = 'placement-assistant-state-v2';
 
 function loadInitial() {
   try {
@@ -19,6 +20,8 @@ function loadInitial() {
     skillLevels: {}, // { [skillName]: 0-100 }
     quizScores: {}, // { [skillName]: 0-100 }
     completedResources: {}, // { [resourceUrl]: true }
+    interviewScores: {}, // { [qId]: 0-100 }
+    resumeData: null, // { atsScore, extractedSkills, missingKeywords, highlights }
     onboarded: false,
   };
 }
@@ -54,9 +57,8 @@ export function AppProvider({ children }) {
   }, [role, studentSkillVector]);
 
   const progressCompletion = useMemo(() => {
-    const total = Object.keys(state.completedResources).length;
-    // crude but explainable: cap the completion contribution at 12 resources
-    return Math.min(100, Math.round((total / 12) * 100));
+    const total = Object.keys(state.completedResources).filter((k) => state.completedResources[k]).length;
+    return Math.min(100, Math.round((total / 10) * 100));
   }, [state.completedResources]);
 
   const quizAvg = useMemo(() => {
@@ -64,6 +66,16 @@ export function AppProvider({ children }) {
     if (scores.length === 0) return 0;
     return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
   }, [state.quizScores]);
+
+  const interviewAvgScore = useMemo(() => {
+    const scores = Object.values(state.interviewScores || {});
+    if (scores.length === 0) return null;
+    return Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+  }, [state.interviewScores]);
+
+  const atsScore = useMemo(() => {
+    return state.resumeData?.atsScore ?? null;
+  }, [state.resumeData]);
 
   const readinessScore = useMemo(
     () =>
@@ -75,13 +87,30 @@ export function AppProvider({ children }) {
     [gapResult.coveragePercent, quizAvg, progressCompletion]
   );
 
+  // AI Machine Learning Predictive Placement Probability & XAI
+  const placementPrediction = useMemo(() => {
+    return predictPlacementProbability({
+      coveragePercent: gapResult.coveragePercent,
+      quizAvg,
+      progressCompletion,
+      interviewScore: interviewAvgScore ?? 55,
+      atsScore: atsScore ?? 50,
+    });
+  }, [gapResult.coveragePercent, quizAvg, progressCompletion, interviewAvgScore, atsScore]);
+
   const actions = {
     setStudent: (student) => setState((s) => ({ ...s, student })),
     setRole: (roleId) => setState((s) => ({ ...s, roleId })),
     setSkillLevel: (skill, level) =>
       setState((s) => ({ ...s, skillLevels: { ...s.skillLevels, [skill]: level } })),
+    setMultipleSkillLevels: (newLevels) =>
+      setState((s) => ({ ...s, skillLevels: { ...s.skillLevels, ...newLevels } })),
     setQuizScore: (skill, score) =>
       setState((s) => ({ ...s, quizScores: { ...s.quizScores, [skill]: score } })),
+    setInterviewScore: (qId, score) =>
+      setState((s) => ({ ...s, interviewScores: { ...(s.interviewScores || {}), [qId]: score } })),
+    setResumeData: (data) =>
+      setState((s) => ({ ...s, resumeData: data })),
     toggleResourceComplete: (url) =>
       setState((s) => ({
         ...s,
@@ -105,6 +134,9 @@ export function AppProvider({ children }) {
     readinessScore,
     quizAvg,
     progressCompletion,
+    interviewAvgScore,
+    atsScore,
+    placementPrediction,
     view,
     setView,
     step,

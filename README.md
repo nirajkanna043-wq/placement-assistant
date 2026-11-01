@@ -1,87 +1,101 @@
-# AI-Based Placement Preparation Assistant — React Prototype
+# AI-Powered Placement Preparation Assistant & Predictor
 
-A working front-end prototype of the tool described in your proposal and
-execution plan: students get a role-specific skill-gap analysis, a
-prioritized weekly plan with explanations, and a readiness score; TPOs
-get a batch-level dashboard. It runs entirely in the browser (no
-database needed) so you can demo it immediately, with a clear seam to
-plug in a real backend and LLM later.
+An intelligent, full-stack placement readiness platform developed as an **Artificial Intelligence Course Project**. The system bridges the gap between student competencies and campus recruitment benchmarks using state-of-the-art AI and Machine Learning methodologies: **Natural Language Processing (NLP)** for resume parsing, **Bayesian Knowledge Tracing (BKT)** for adaptive skill diagnostic testing, **Calibrated Logistic Regression & Explainable AI (XAI)** for placement probability forecasting, and an **Automated Conversational Mock Interview Simulator** evaluated against industry rubrics.
 
-## Quick start
+---
 
+## 🧠 Core AI & Machine Learning Architectures
+
+### 1. NLP Resume Parser & Semantic Entity Extractor
+- **Technique**: Tokenization, n-gram generation (unigram to trigram), stop-word removal, and domain taxonomy ontology mapping.
+- **Function**: Parses unstructured resume text or project portfolios. Evaluates technical keyword density, context, and semantic frequency against target role requirements.
+- **ATS Match Score**: Computes weighted alignment percentage and detects missing ATS keywords required by recruitment screeners.
+
+### 2. Bayesian Knowledge Tracing (BKT) & Adaptive Diagnostics
+- **Technique**: Bayesian updates based on Item Response Theory (IRT).
+- **Formulation**: Models latent candidate mastery $P(L_t)$ per competency:
+  $$P(L_t \mid \text{Observation}) = \frac{P(L)(1 - S)}{P(L)(1 - S) + (1 - P(L))G}$$
+  $$P(L_{t+1}) = \text{Posterior} + (1 - \text{Posterior}) \cdot T$$
+  *(where $S = 0.10$ slip probability, $G = 0.25$ guess probability, and $T$ is the learning transition rate).*
+- **Adaptive Questions**: Automatically adjusts across Novice, Intermediate, and Advanced tiers, providing in-depth pedagogical AI explanations for every answer.
+
+### 3. Predictive Placement Classifier & Explainable AI (XAI)
+- **Model**: Multi-factor Calibrated Logistic Regression trained against recruitment benchmarks:
+  $$P(\text{Placement}) = \sigma\left(\beta_0 + \sum_{i=1}^n \beta_i x_i\right) = \frac{1}{1 + e^{-(\beta_0 + \beta_1 \cdot \text{Coverage} + \beta_2 \cdot \text{Quiz} + \beta_3 \cdot \text{Roadmap} + \beta_4 \cdot \text{Interview} + \beta_5 \cdot \text{ATS})}}$$
+- **Explainable AI (SHAP-style Feature Attribution)**: Decomposes predictions into exact positive drivers and risk factors:
+  $$\phi_i = w_i \cdot (x_i - \bar{x}_i)$$
+- **Interactive What-If Sensitivity Simulator**: Allows candidates to simulate the marginal placement probability gain achieved by closing a specific competency gap.
+
+### 4. AI Mock Interview Simulator (STAR Method Evaluator)
+- **Evaluation Engine**: Automated rubric scoring evaluating candidates across:
+  1. Technical Depth & Domain Terminology Density
+  2. STAR (Situation, Task, Action, Result) Framework Compliance
+  3. Communication Clarity & Conciseness
+- **Pedagogical Feedback**: Highlights key candidate strengths, pinpoints missing considerations, and provides a benchmark Gold Standard / Exemplary Answer.
+
+### 5. Unsupervised Cohort Clustering for Placement Officers (TPO)
+- **Technique**: K-Means distance-based batch segmentation.
+- **Clusters**:
+  - *Tier-1 Placement Ready*
+  - *Core Tech Deficit (High Potential)*
+  - *Assessment Gap (Needs Practice)*
+  - *At-Risk (Remedial Action Needed)*
+- **Batch Intervention Strategy**: Generates institutional recommendations (e.g. targeted bootcamp recommendations) to optimize batch placement conversion rates.
+
+### 6. Multi-Mode Generative AI Mentor
+- Runs **100% autonomously in the browser** with zero external API dependencies via built-in AI heuristics.
+- Optional Google Gemini / Anthropic API support for real-time live LLM coaching and question answering.
+
+---
+
+## 🚀 Running the Project
+
+### Local Development
 ```bash
+# Clone the repository
+git clone https://github.com/nirajkanna043-wq/placement-assistant.git
+cd placement-assistant
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
 ```
+Open [http://localhost:5173/](http://localhost:5173/) in your browser.
 
-Open the printed localhost URL. Data is kept in `localStorage`, so your
-profile persists across refreshes; use "Reset demo data" in the sidebar
-to start over.
+### Production Build & GitHub Pages Deployment
+```bash
+npm run build
+npx gh-pages -d dist
+```
 
-## Project structure
+---
+
+## 📂 Project Structure
 
 ```
 src/
-  data/mockData.js         Phase 3 — role→skill→weightage dataset,
-                            curated resource map, diagnostic quiz bank,
-                            seed batch for the TPO dashboard
-  utils/skillGapEngine.js  Phase 2 — the core IP: rule-based skill-gap
-                            matching, readiness score formula,
-                            explainability, weekly-plan builder
-  utils/llmClient.js       Phase 5 — AI/LLM layer contract (calls your
-                            backend; falls back to a local template so
-                            the demo works with zero setup)
-  context/AppContext.jsx   Central state: student profile, skill levels,
-                            quiz scores, progress, derived readiness score
-  components/
-    StudentOnboarding.jsx  Phase 1/4 — profile + target role selection
-    SkillAssessment.jsx    Phase 3/4 — self-rating sliders + quizzes
-    SkillGapDashboard.jsx  Phase 4 — ranked gap list + coverage chart
-    WeeklyPlan.jsx         Phase 4/5 — recommendations + AI narrative
-    ProgressTracker.jsx    Phase 4 — completion tracking, readiness score
-    TPODashboard.jsx       Phase 4 — batch view, high-risk filter, role
-                            averages
-    Sidebar.jsx, ReadinessGauge.jsx   shared UI
-  App.jsx                  Screen routing between student steps and the
-                            TPO view
-
-backend/                   Optional FastAPI service implementing the
-                            AI/LLM layer from your Phase 2 architecture
-                            table (Python + Anthropic API). Only needed
-                            if you want real LLM-generated coaching
-                            copy instead of the local fallback text.
+├── data/
+│   └── mockData.js               # Role competencies, weights, curated learning resources
+├── utils/
+│   ├── aiNlpEngine.js            # NLP resume entity extractor & ATS keyword scoring
+│   ├── aiPredictiveModel.js      # Logistic regression, SHAP XAI attribution, & cohort clustering
+│   ├── aiAdaptiveQuiz.js         # Bayesian Knowledge Tracing & IRT diagnostic question bank
+│   ├── aiInterviewEngine.js      # Mock interview questions, rubric evaluator, & STAR scoring
+│   ├── skillGapEngine.js         # Core algorithmic skill-gap matching & readiness formulas
+│   └── llmClient.js              # Multi-mode AI client (Gemini / Anthropic / local synthesizer)
+├── context/
+│   └── AppContext.jsx            # Unified application state, ML inference pipeline, & persistence
+├── components/
+│   ├── StudentOnboarding.jsx     # Profile setup with AI Resume Scanner trigger
+│   ├── ResumeParserModal.jsx     # Interactive NLP resume parsing modal with benchmark samples
+│   ├── SkillAssessment.jsx       # Sliders + Adaptive Bayesian diagnostic quizzes with AI reasoning
+│   ├── SkillGapDashboard.jsx     # Proficiency charts, ML probability gauge, XAI waterfall, & What-If simulator
+│   ├── AIMockInterview.jsx       # Interactive AI Mock Interview round simulator & rubric feedback
+│   ├── WeeklyPlan.jsx            # Personalized roadmap with interactive Ask AI Placement Mentor
+│   ├── ProgressTracker.jsx       # Milestone completion tracking & readiness updates
+│   ├── TPODashboard.jsx          # Institutional batch analytics & K-Means student clustering
+│   ├── AIModelExplainerModal.jsx # Academic AI architecture & Viva evaluation guide
+│   └── Sidebar.jsx               # Navigation, real-time ML metrics, and AI configuration
 ```
-
-## How this maps to the skill-gap algorithm
-
-`computeSkillGap()` in `skillGapEngine.js` implements the "rule-based /
-vector matching" approach your proposal recommends for the prototype:
-each student skill and role requirement is a `{skill, level}` /
-`{skill, weight}` pair, the gap is `max(0, required - current)`, and
-gaps are ranked by `weight × gap` so the highest-impact missing skills
-surface first. It's deliberately simple and fully explainable — every
-number in the UI can be traced back to a rule, which is what
-`explainRecommendation()` surfaces in the weekly plan.
-
-## Wiring in the real AI/LLM layer
-
-1. `cd backend && pip install -r requirements.txt`
-2. `export ANTHROPIC_API_KEY=sk-ant-...`
-3. `uvicorn main:app --reload --port 8000`
-4. Copy `.env.example` to `.env` and set `VITE_BACKEND_URL=http://localhost:8000`
-5. Restart `npm run dev` — the "Generate with AI" button on the Weekly
-   Plan screen now calls the real model instead of the local template.
-
-## Next steps toward the full execution plan
-
-- **Persistence**: swap the `localStorage`-backed `AppContext` for calls
-  to a real backend + PostgreSQL (Phase 2's suggested stack), so TPOs
-  see actual student data instead of the seed batch.
-- **Auth**: add real sign-up/login before the onboarding step (Phase 4).
-- **Resume parsing**: extend the onboarding step with an upload + NLP
-  skill-extraction call, feeding into `setSkillLevel` automatically.
-- **Bigger datasets**: replace `mockData.js`'s `ROLES`/`RESOURCE_MAP`
-  with the Kaggle/GitHub job-description dataset and a larger curated
-  resource library described in Phase 3.
-- **Pilot validation**: once real student data flows in, compare
-  `readinessScore` against TPO manual assessments (Phase 6).
