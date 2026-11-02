@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentation Deck — AI Placement Preparation Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #1B1F23;
+      --panel: #22282E;
+      --parchment: #FAF7F0;
+      --paper: #F1ECDF;
+      --runway: #2F6F6F;
+      --amber: #D9A441;
+      --rust: #B4532A;
+      --line: #DDD5C2;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--ink);
+      color: #F8F8F2;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .slide-viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      position: relative;
+    }
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1200px;
+      height: 90vh;
+      max-height: 700px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 45px 55px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      flex-direction: column;
+      animation: fadeIn 0.3s ease;
+      position: relative;
+      overflow-y: auto;
+    }
+    .slide.active { display: flex; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.98); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .badge {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--amber);
+      background: rgba(217,164,65,0.12);
+      border: 1px solid rgba(217,164,65,0.3);
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    h1.display-title {
+      font-family: 'Fraunces', serif;
+      font-size: 40px;
+      line-height: 1.15;
+      color: #FFFFFF;
+      margin-bottom: 14px;
+    }
+    h2.slide-title {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      color: #FFFFFF;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      color: #A0AAB5;
+      font-size: 15px;
+      line-height: 1.5;
+      margin-bottom: 25px;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      flex: 1;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 18px;
+      flex: 1;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 15px;
+      flex: 1;
+    }
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 8px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+    }
+    .card.teal-border { border-color: var(--runway); background: rgba(47,111,111,0.08); }
+    .card.amber-border { border-color: var(--amber); background: rgba(217,164,65,0.08); }
+    .card.rust-border { border-color: var(--rust); background: rgba(180,83,42,0.08); }
+    .card h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .card ul {
+      list-style: none;
+      font-size: 13px;
+      color: #D1D9E0;
+      line-height: 1.6;
+    }
+    .card ul li {
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 14px;
+    }
+    .card ul li::before {
+      content: "•";
+      color: var(--amber);
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+    .formula-box {
+      background: #111417;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      padding: 12px 14px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--amber);
+      margin: 10px 0;
+      line-height: 1.4;
+    }
+    /* Controls Footer */
+    .controls {
+      height: 60px;
+      background: #15191C;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 30px;
+      font-size: 13px;
+      color: #A0AAB5;
+    }
+    .btn-group { display: flex; gap: 10px; align-items: center; }
+    button.nav-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #FFFFFF;
+      padding: 7px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    button.nav-btn:hover { background: var(--runway); border-color: var(--runway); }
+    .progress-bar {
+      height: 3px;
+      background: rgba(255,255,255,0.1);
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--amber);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    a.link {
+      color: var(--amber);
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="slide-viewport">
+
+    <!-- SLIDE 1 -->
+    <div class="slide active" data-index="1">
+      <span class="badge">AI & ML Course Capstone Project</span>
+      <h1 class="display-title">Readiness: AI-Powered Placement<br>Preparation Assistant & Predictor</h1>
+      <p class="subtitle">An End-to-End System Integrating NLP, Bayesian Knowledge Tracing, Explainable AI (XAI), and Speech Analytics for Campus Recruitment</p>
+      
+      <div class="card teal-border" style="margin-top: auto;">
+        <h3 style="color: var(--amber);">PROJECT & EVALUATION METADATA</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 13px; margin-top: 10px;">
+          <div>
+            <p><strong>Presenter / Author:</strong> Niraj Kanna</p>
+            <p><strong>Live Demo Website:</strong> <a class="link" href="https://nirajkanna043-wq.github.io/placement-assistant/" target="_blank">nirajkanna043-wq.github.io/placement-assistant/</a></p>
+          </div>
+          <div>
+            <p><strong>GitHub Codebase:</strong> <a class="link" href="https://github.com/nirajkanna043-wq/placement-assistant" target="_blank">github.com/nirajkanna043-wq/placement-assistant</a></p>
+            <p><strong>Core Stack:</strong> React 18, Tailwind, Recharts, Web Speech API, python-pptx</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2 -->
+    <div class="slide" data-index="2">
+      <span class="badge">Context & Problem Statement</span>
+      <h2 class="slide-title">The Campus Recruitment Bottleneck</h2>
+      <p class="subtitle">Why traditional preparation workflows and black-box tools fail engineering students and placement cells.</p>
+
+      <div class="grid-3">
+        <div class="card rust-border">
+          <h3 style="color: var(--rust);">1. The ATS Rejection Trap</h3>
+          <ul>
+            <li><strong>80%+ of campus resumes</strong> are filtered out by automated ATS screeners before a human recruiter reads them.</li>
+            <li>Students are unaware of missing role-critical keywords and domain entity density.</li>
+            <li>Lack of feedback leads to repeated rejections and demotivation.</li>
+          </ul>
+        </div>
+        <div class="card amber-border">
+          <h3 style="color: var(--amber);">2. Static & Naive Testing</h3>
+          <ul>
+            <li>Standard portals score tests on simple percentages, ignoring <strong>lucky guesses</strong> or <strong>careless slips</strong>.</li>
+            <li>Zero dynamic difficulty: doesn't adapt to student ability.</li>
+            <li>No explainability: doesn't pinpoint which skill gap yields the highest marginal ROI.</li>
+          </ul>
+        </div>
+        <div class="card teal-border">
+          <h3 style="color: var(--runway);">3. Institutional Blindspots</h3>
+          <ul>
+            <li>TPOs (Placement Officers) manage hundreds of candidates on static spreadsheets with zero predictive foresight.</li>
+            <li>At-risk candidates are discovered only after placement season begins.</li>
+            <li>Lack of automated student cohort clustering and intervention workflows.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3 -->
+    <div class="slide" data-index="3">
+      <span class="badge">Engineering Architecture</span>
+      <h2 class="slide-title">System Architecture & AI Pipeline</h2>
+      <p class="subtitle">Six synergistic artificial intelligence modules powering real-time candidate diagnosis and institutional intelligence.</p>
+
+      <div class="grid-4">
+        <div class="card teal-border">
+          <h3 style="color: var(--runway); font-size: 16px;">1. NLP Ingestion</h3>
+          <ul>
+            <li>Unstructured text preprocessing</li>
+            <li>N-gram extraction (1-3 words)</li>
+            <li>Domain ontology mapping</li>
+            <li>ATS match calculation</li>
+          </ul>
+        </div>
+        <div class="card amber-border">
+          <h3 style="color: var(--amber); font-size: 16px;">2. Bayesian Testing</h3>
+          <ul>
+            <li>Bayesian Knowledge Tracing</li>
+            <li>Latent mastery state P(L)</li>
+            <li>Slip & guess modeling</li>
+            <li>IRT difficulty routing</li>
+          </ul>
+        </div>
+        <div class="card rust-border">
+          <h3 style="color: var(--rust); font-size: 16px;">3. ML & XAI Engine</h3>
+          <ul>
+            <li>Calibrated Logistic model</li>
+            <li>Sigmoid offer probability</li>
+            <li>SHAP attribution waterfall</li>
+            <li>What-If sensitivity engine</li>
+          </ul>
+        </div>
+        <div class="card teal-border">
+          <h3 style="color: var(--runway); font-size: 16px;">4. Simulators & Intel</h3>
+          <ul>
+            <li>Speech AI Mock Interviewer</li>
+            <li>AST Big-O code sandbox</li>
+            <li>Interactive ML Research Lab</li>
+            <li>K-Means TPO batch clustering</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4 -->
+    <div class="slide" data-index="4">
+      <span class="badge">Module 01: Information Extraction</span>
+      <h2 class="slide-title">NLP Resume Parser & ATS Alignment</h2>
+      <p class="subtitle">Tokenizing unstructured resumes, extracting domain entities, and scoring recruitment alignment.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--runway);">Text Processing Mechanics</h3>
+          <ul>
+            <li><strong>N-Gram Tokenizer:</strong> Generates unigrams, bigrams, and trigrams to capture multi-word technical concepts like <em>"Binary Search Tree"</em>, <em>"System Design"</em>, and <em>"REST API"</em>.</li>
+            <li><strong>Domain Ontology:</strong> Matches against 15+ curated technical skills across SDE, Data Analyst, and Frontend roles.</li>
+            <li><strong>Keyword Density Weighting:</strong> Rewards contextual depth and project mentions rather than superficial keyword repetition.</li>
+          </ul>
+        </div>
+        <div class="card amber-border">
+          <h3 style="color: var(--amber);">Mathematical Formulations</h3>
+          <div class="formula-box">
+            Confidence = min(95, 35 + (Hits × 18) + (Density × 4) + MultiwordBonus)
+          </div>
+          <div class="formula-box">
+            ATS_Score = ( Σ [Matched_i / 100 × Weight_i] ) / Total_Role_Weight × 100
+          </div>
+          <ul>
+            <li>Automatically detects missing industry keywords required by target job descriptions.</li>
+            <li>Auto-calibrates candidate skill levels with 1-click benchmark resume testing.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5 -->
+    <div class="slide" data-index="5">
+      <span class="badge">Module 02: Adaptive Testing</span>
+      <h2 class="slide-title">Bayesian Knowledge Tracing (BKT) & IRT</h2>
+      <p class="subtitle">Modeling genuine latent skill mastery while mathematically isolating slips and guesses.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--rust);">Why BKT Outperforms Raw Scores</h3>
+          <ul>
+            <li><strong>Guess Isolation:</strong> In a 4-option test, random guessing yields a 25% score. BKT suppresses false skill inflation.</li>
+            <li><strong>Slip Tolerance:</strong> High-proficiency students who make occasional typos (slip error) aren't harshly penalized.</li>
+            <li><strong>Latent State:</strong> Tracks true candidate knowledge $P(L_t)$ as a continuous probability distribution.</li>
+          </ul>
+        </div>
+        <div class="card teal-border">
+          <h3 style="color: var(--runway);">Bayesian Update Equations</h3>
+          <div class="formula-box">
+            P(L_t | Correct) = [ P(L)·(1 - S) ] / [ P(L)·(1 - S) + (1 - P(L))·G ]
+          </div>
+          <div class="formula-box">
+            P(L_t | Incorrect) = [ P(L)·S ] / [ P(L)·S + (1 - P(L))·(1 - G) ]
+          </div>
+          <div class="formula-box">
+            Next_Belief P(L_{t+1}) = Posterior + (1 - Posterior)·T
+          </div>
+          <ul style="font-size: 11px; margin-top: 5px;">
+            <li>Slip Probability ($S$) = 0.10 | Guess Probability ($G$) = 0.25 | Learning Rate ($T$) = 0.15</li>
+            <li>Item Response Theory (IRT): Dynamically branches Easy $\to$ Medium $\to$ Hard questions.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6 -->
+    <div class="slide" data-index="6">
+      <span class="badge">Module 03: Machine Learning & XAI</span>
+      <h2 class="slide-title">Placement Classifier & SHAP Waterfall</h2>
+      <p class="subtitle">Calibrated supervised inference with transparent feature attribution and sensitivity simulation.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--runway);">Calibrated Logistic Classifier</h3>
+          <div class="formula-box">
+            P(Offer) = σ(z) = 1 / (1 + e^-z)<br>
+            z = β0 + β1·Coverage + β2·Quiz + β3·Roadmap + β4·Interview + β5·ATS
+          </div>
+          <ul>
+            <li>Normalized feature vector combining technical coverage, diagnostic accuracy, roadmap velocity, and mock interview score.</li>
+            <li>Threshold bias ($\beta_0 = -2.35$) represents competitive campus selection bar.</li>
+            <li>Categorizes candidates: <em>Tier-1 Placement Ready</em> ($\ge 75\%$), <em>Competitive</em>, or <em>At-Risk</em>.</li>
+          </ul>
+        </div>
+        <div class="card amber-border">
+          <h3 style="color: var(--amber);">Explainable AI & "What-If"</h3>
+          <div class="formula-box">
+            SHAP Attribution φ_i = w_i · (x_i - x_mean_i)
+          </div>
+          <ul>
+            <li><strong>Positive Drivers (+):</strong> Visualizes exact features boosting placement odds (+18% DSA coverage).</li>
+            <li><strong>Risk Detractors (-):</strong> Highlights vulnerabilities pulling odds down (-14% System Design).</li>
+            <li><strong>"What-If" Simulator:</strong> Lets students test scenarios (e.g. boosting SQL to 85% yields +11% marginal probability gain).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7 -->
+    <div class="slide" data-index="7">
+      <span class="badge">Module 04: Voice & Conversational AI</span>
+      <h2 class="slide-title">AI Speech Mock Interviewer & STAR Rubric</h2>
+      <p class="subtitle">Multi-modal speech pipeline with automated behavioral and technical interview evaluation.</p>
+
+      <div class="grid-2">
+        <div class="card teal-border">
+          <h3 style="color: var(--runway);">Voice Pipeline & Fluency Analytics</h3>
+          <ul>
+            <li><strong>Text-to-Speech (TTS):</strong> Uses Web SpeechSynthesis to vocalize authentic interviewer questions out loud.</li>
+            <li><strong>Speech-to-Text (STT):</strong> Live microphone capture with real-time browser transcription.</li>
+            <li><strong>Pacing Analytics:</strong> Real-time Words Per Minute (WPM) tracking against standard 120-150 WPM interview cadence.</li>
+            <li><strong>Filler Word Counter:</strong> Quantifies hesitations (<em>"um"</em>, <em>"uh"</em>, <em>"basically"</em>, <em>"like"</em>).</li>
+          </ul>
+        </div>
+        <div class="card amber-border">
+          <h3 style="color: var(--amber);">STAR Framework Evaluation</h3>
+          <ul>
+            <li><strong>Methodology Verification:</strong> Inspects responses for <em>Situation</em>, <em>Task</em>, <em>Action</em>, and <em>Quantifiable Result</em>.</li>
+            <li><strong>Technical Vocabulary Density:</strong> Rewards domain architectural concepts and trade-off analysis.</li>
+            <li><strong>Gold Standard Exemplar:</strong> Provides side-by-side 100/100 model answer for student review.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8 -->
+    <div class="slide" data-index="8">
+      <span class="badge">Module 05: Algorithmic Verification</span>
+      <h2 class="slide-title">AI Code Sandbox & Static AST Big-O Engine</h2>
+      <p class="subtitle">Static code inspection deducing asymptotic time/space bounds without execution timeouts.</p>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 style="color: var(--runway);">Static AST Complexity Deduction</h3>
+          <ul>
+            <li><strong>Loop Nesting Analysis:</strong> Detects interdependent nested loops to flag $O(n^2)$ quadratic bottlenecks.</li>
+            <li><strong>Hash Structure Recognition:</strong> Identifies `Map` / `Set` auxiliary allocations achieving optimal $O(1)$ lookup time.</li>
+            <li><strong>Zero Timeout Vulnerabilities:</strong> Performs static code inspection in browser sandbox with zero security risks.</li>
+          </ul>
+        </div>
+        <div class="card teal-border">
+          <h3 style="color: var(--amber);">Defensive Engineering & Solutions</h3>
+          <ul>
+            <li><strong>Edge-Case Testing:</strong> Tests for empty collection checks, null guards, and parity constraints.</li>
+            <li><strong>Algorithmic Code Score:</strong> Blends efficiency (50%), edge cases (30%), and clean code style (20%).</li>
+            <li><strong>Exemplar Comparison:</strong> Reveals production-grade refactored code with optimal Big-O bounds.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9 -->
+    <div class="slide" data-index="9">
+      <span class="badge">Module 06: Academic Research</span>
+      <h2 class="slide-title">Interactive ML Lab & Decision Hyperplane</h2>
+      <p class="subtitle">Live neuron activation sandbox and 2D classification decision space for viva demonstration.</p>
+
+      <div class="grid-2">
+        <div class="card amber-border">
+          <h3 style="color: var(--amber);">Forward-Pass Perceptron Sandbox</h3>
+          <div class="formula-box">
+            z = β0 + Σ (w_i · x_i)  -->  P = σ(z) = 1 / (1 + e^-z)
+          </div>
+          <ul>
+            <li>Interactive sliders for feature inputs ($x_i$), synaptic weights ($w_i$), and threshold bias ($\beta_0$).</li>
+            <li>Live activation display: visualizes how the artificial neuron fires as parameters adjust.</li>
+          </ul>
+        </div>
+        <div class="card teal-border">
+          <h3 style="color: var(--runway);">2D Decision Space & Loss Curve</h3>
+          <ul>
+            <li><strong>2D Scatter Plot:</strong> Maps candidates across Technical Coverage vs. Interview Performance.</li>
+            <li><strong>Decision Hyperplane:</strong> Visualizes the separating boundary between "Placed" and "At-Risk" candidates.</li>
+            <li><strong>Live Candidate Dot:</strong> Shows candidate's coordinate position relative to the placement boundary.</li>
+            <li><strong>Loss Minimization:</strong> Plots Binary Cross-Entropy loss convergence over 50 gradient descent epochs ($94.2\%$ accuracy).</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10 -->
+    <div class="slide" data-index="10">
+      <span class="badge">Module 07: Institutional Intelligence</span>
+      <h2 class="slide-title">TPO Batch Analytics & K-Means Clustering</h2>
+      <p class="subtitle">Unsupervised clustering for placement officers with automated institutional training recommendations.</p>
+
+      <div class="grid-2">
+        <div class="card teal-border">
+          <h3 style="color: var(--runway); font-size: 16px;">Cluster 1: Direct Ready (≥ 75%)</h3>
+          <p style="font-size: 12px; color: #CCD6E0; margin-bottom: 6px;">High technical coverage and proven interview readiness.</p>
+          <div class="formula-box" style="font-size: 10px; color: #FFF;">
+            Intervention: Fast-track to product company interview rounds; schedule advanced mock interviews.
+          </div>
+
+          <h3 style="color: var(--amber); font-size: 16px; margin-top: 10px;">Cluster 2: Core Tech Deficit (55-74%)</h3>
+          <p style="font-size: 12px; color: #CCD6E0; margin-bottom: 6px;">Good fundamentals but lacking high-weight domain skills (DSA/System Design).</p>
+          <div class="formula-box" style="font-size: 10px; color: #FFF;">
+            Intervention: Conduct intensive 2-week coding sprint focused on top weighted gaps.
+          </div>
+        </div>
+
+        <div class="card rust-border">
+          <h3 style="color: var(--rust); font-size: 16px;">Cluster 3: Assessment Gap (45-54%)</h3>
+          <p style="font-size: 12px; color: #CCD6E0; margin-bottom: 6px;">Moderate self-ratings but low quiz accuracy or uncompleted roadmap.</p>
+          <div class="formula-box" style="font-size: 10px; color: #FFF;">
+            Intervention: Mandate weekly timed diagnostic quizzes and verified coding submissions.
+          </div>
+
+          <h3 style="color: #FFF; font-size: 16px; margin-top: 10px;">Cluster 4: At-Risk Placement (&lt; 45%)</h3>
+          <p style="font-size: 12px; color: #CCD6E0; margin-bottom: 6px;">Overall readiness below 45%; high risk of missing early placement drives.</p>
+          <div class="formula-box" style="font-size: 10px; color: #FFF;">
+            Intervention: Immediate 1-on-1 faculty counselling and remedial foundations bootcamp.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11 -->
+    <div class="slide" data-index="11">
+      <span class="badge">Validation & Certification</span>
+      <h2 class="slide-title">Competency Radar & Audit Dossier</h2>
+      <p class="subtitle">Multi-dimensional spatial benchmarking and verifiable readiness certification.</p>
+
+      <div class="grid-2">
+        <div class="card teal-border">
+          <h3 style="color: var(--runway);">Competency Radar Map</h3>
+          <ul>
+            <li>Multi-dimensional spatial visualization across core recruitment axes.</li>
+            <li>Direct visual comparison against the Tier-1 / FAANG placement benchmark ($80\%$).</li>
+            <li>Instantly pinpoints competency balance across programming, architecture, databases, and problem solving.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3 style="color: var(--amber);">Official Placement Audit Dossier</h3>
+          <ul>
+            <li><strong>1-Click Printable Certificate:</strong> Formally verifies candidate readiness score and predicted placement tier.</li>
+            <li><strong>Cryptographic Verification Hash:</strong> Features SHA-256 model verification hash authenticating score integrity.</li>
+            <li>Itemizes verified BKT scores and 30-day prescriptive preparation recommendations.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12 -->
+    <div class="slide" data-index="12">
+      <span class="badge">Summary & Impact</span>
+      <h2 class="slide-title">Conclusion & Key Contributions</h2>
+      <p class="subtitle">Delivering transparent, explainable, and multi-modal AI for higher education.</p>
+
+      <div class="card amber-border" style="flex: 1;">
+        <h3 style="color: var(--amber);">PROJECT CONTRIBUTIONS & TAKEAWAYS</h3>
+        <ul style="font-size: 14px; line-height: 1.8; margin-top: 10px;">
+          <li><strong>End-to-End AI Synergy:</strong> Successfully combines NLP, Bayesian Knowledge Tracing, Calibrated Logistic Classification, Explainable AI (XAI), Speech Analytics, and Static AST Analysis.</li>
+          <li><strong>100% Autonomous Edge Execution:</strong> Runs zero-latency in any browser with zero server costs, while supporting optional Gemini LLM integration.</li>
+          <li><strong>Explainability Over Black-Boxes:</strong> Provides candidates and professors with transparent mathematical attribution for every recommendation.</li>
+          <li><strong>Institutional Utility:</strong> Empowers placement cells with predictive cohort clustering and actionable intervention scheduling.</li>
+          <li><strong>Public Deployment:</strong> Fully live and functional at <a class="link" href="https://nirajkanna043-wq.github.io/placement-assistant/" target="_blank">nirajkanna043-wq.github.io/placement-assistant/</a>.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONTROLS FOOTER -->
+  <div class="controls">
+    <div>
+      <span id="slideIndicator" style="font-family: 'IBM Plex Mono', monospace; font-weight: bold; color: var(--amber);">Slide 01 of 12</span>
+    </div>
+    <div class="btn-group">
+      <button class="nav-btn" onclick="prevSlide()">← Previous</button>
+      <button class="nav-btn" onclick="nextSlide()">Next →</button>
+      <button class="nav-btn" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+      <a href="https://nirajkanna043-wq.github.io/placement-assistant/" target="_blank" class="nav-btn" style="text-decoration: none;">🚀 Open Live Website</a>
+    </div>
+  </div>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    let currentSlide = 0;
+
+    function showSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= totalSlides) index = totalSlides - 1;
+      currentSlide = index;
+
+      slides.forEach((s, i) => {
+        s.classList.toggle('active', i === currentSlide);
+      });
+
+      document.getElementById('slideIndicator').textContent = 
+        `Slide ${String(currentSlide + 1).padStart(2, '0')} of ${String(totalSlides).padStart(2, '0')}`;
+
+      const progress = ((currentSlide + 1) / totalSlides) * 100;
+      document.getElementById('progressFill').style.width = `${progress}%`;
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides - 1) showSlide(currentSlide + 1);
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) showSlide(currentSlide - 1);
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+      if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'f' || e.key === 'F') toggleFullScreen();
+    });
+
+    showSlide(0);
+  </script>
+</body>
+</html>
